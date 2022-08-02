@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import mplcursors
 import numpy as np
 import scipy.stats
 
@@ -46,15 +47,16 @@ def calc_ppv_ls(n_validators, n_years, n_trials, n_smoothie=None, per_validator=
 
 
 def plot_kdes_and_sfs():
-    years = 5
-    trials = 1000
+    years = 3
+    trials = 5000
     results_ls = []
 
     input_ls = [
-        (1, None, 'solitarius_1minipool'),
-        (5, None, 'solitarius_5minipool'),
-        (50, None, 'solitarius_50minipool'),
-        (1, 2000, '2ksmoothie_any#minipool'),
+        (1, 1, '1'),
+        # (1, 500, '500'),
+        # (1, 1000, '2k'),
+        # (1, 2000, '2k'),
+        # (1, 5000, '5k'),
         # The following all give the same results (assuming trials is large enough)
         # (1, 2000, '2ksmoothie_1'),
         # (5, 2000, '2ksmoothie_5'),
@@ -75,21 +77,30 @@ def plot_kdes_and_sfs():
     # xmin = min([min(resls) for resls in list(zip(*results_ls))[0]])
     # xmax = max([max(resls) for resls in list(zip(*results_ls))[0]])
 
-    xmin, xmax = 0, 30  # setting manually
+    xmin, xmax = 0, 30  # setting manually for 5 years
+    # xmin, xmax = 0, 15  # setting manually for 3 years
+    # xmin, xmax = 0, 5  # setting manually for 1 year
     xpts = np.linspace(xmin, xmax, num=2000)
-    fig, subplots = plt.subplots(2)
+    fig, subplots = plt.subplots(3)
     for res, lbl in results_ls:
         ypts = scipy.stats.gaussian_kde(res).evaluate(xpts)
         ypts /= sum(ypts)  # make total area 1
         subplots.flat[0].plot(xpts, ypts, label=lbl)  # kde (~pdf)
         subplots.flat[1].plot(xpts, 1 - np.cumsum(ypts), label=lbl)  # survival function (1-cdf)
+        subplots.flat[2].semilogy(xpts, 1 - np.cumsum(ypts), label=lbl)  # survival function (1-cdf)
     subplots.flat[0].legend()
     subplots.flat[0].set_xlabel('ETH')
     subplots.flat[0].set_ylabel('Probability of this reward')
     subplots.flat[1].legend()
+    subplots.flat[1].grid()
     subplots.flat[1].set_xlabel('ETH')
     subplots.flat[1].set_ylabel('Probability of this\nreward or greater')
+    subplots.flat[2].legend()
+    subplots.flat[2].grid()
+    subplots.flat[2].set_xlabel('ETH')
+    subplots.flat[2].set_ylabel('Probability of this\nreward or greater')
     fig.suptitle(f'Per-minipool rewards for various setups after {years} years')
+    mplcursors.cursor(multiple=True)
     plt.show()
 
 
